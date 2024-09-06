@@ -1,0 +1,15 @@
+# CPU
+mpirun -np 2 -H lego-cg1-qs-139:2 --mca pml ucx --mca coll ucc,basic,libnbc --map-by ppr:1:numa --bind-to core /lustre/nsarkauskas/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_allreduce ; 5 ; CPU
+mpirun -np 2 -H lego-cg1-qs-139:2 --mca pml ucx --mca coll ucc,basic,libnbc --map-by ppr:1:numa --bind-to core /lustre/nsarkauskas/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_reduce ; 5 ; CPU
+mpirun -np 2 -H lego-cg1-qs-139:2 --mca pml ucx --mca coll ucc,basic,libnbc --map-by ppr:1:numa --bind-to core /lustre/nsarkauskas/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_alltoall ; 5 ; CPU
+mpirun -np 2 -H lego-cg1-qs-139:2 --mca pml ucx --mca coll ucc,basic,libnbc --map-by ppr:1:numa --bind-to core /lustre/nsarkauskas/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_alltoallv ; 5 ; CPU
+mpirun -np 2 -H lego-cg1-qs-139:2 --mca pml ucx --mca coll ucc,basic,libnbc --map-by ppr:1:numa --bind-to core /lustre/nsarkauskas/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_allgather ; 5 ; CPU
+mpirun -np 2 -H lego-cg1-qs-139:2 --mca pml ucx --mca coll ucc,basic,libnbc --map-by ppr:1:numa --bind-to core /lustre/nsarkauskas/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_allgatherv ; 5 ; CPU
+
+# GPU
+mpirun -np 2 -H lego-cg1-qs-139:2 --mca pml ucx --mca coll ucc,basic,libnbc --map-by ppr:1:numa --bind-to core /lustre/nsarkauskas/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_allreduce -d cuda ; 5 ; GPU
+mpirun -np 2 -H lego-cg1-qs-139:2 --mca pml ucx --mca coll ucc,basic,libnbc --map-by ppr:1:numa --bind-to core /lustre/nsarkauskas/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_reduce -d cuda ; 5 ; GPU
+mpirun -np 2 -H lego-cg1-qs-139:2 --mca pml ucx --mca coll ucc,basic,libnbc --map-by ppr:1:numa --bind-to core /lustre/nsarkauskas/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_alltoall -d cuda ; 5 ; GPU
+mpirun -np 2 -H lego-cg1-qs-139:2 --mca pml ucx --mca coll ucc,basic,libnbc --map-by ppr:1:numa --bind-to core /lustre/nsarkauskas/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_alltoallv -d cuda ; 5 ; GPU
+mpirun -np 2 -H lego-cg1-qs-139:2 --mca pml ucx --mca coll ucc,basic,libnbc --map-by ppr:1:numa --bind-to core /lustre/nsarkauskas/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_allgather -d cuda ; 5 ; GPU
+mpirun -np 2 -H lego-cg1-qs-139:2 --mca pml ucx --mca coll ucc,basic,libnbc --map-by ppr:1:numa --bind-to core /lustre/nsarkauskas/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_allgatherv -d cuda ; 5 ; GPU
