@@ -3,8 +3,9 @@
 import argparse
 import subprocess
 import pandas as pd
-import sys
+import sys, os
 from omb.parse_lat import *
+from excel.excel import *
 from tqdm import tqdm
 
 def run_command(command):
@@ -24,9 +25,11 @@ def main():
     parser.add_argument("-o", "--output", nargs=1, required=False, help="Output *.xlsx file to save to (.xlsx will be appended automatically)")
     args = parser.parse_args()
 
+    command = args.command[0]
+
     dfs = []
     for _ in tqdm(range(args.iters), desc=f"Running command {args.iters} times"):
-        out = run_command(args.command[0].split(' '))
+        out = run_command(command.split(' '))
         df = parse_latency_output(out)
         dfs.append(df)
 
@@ -35,7 +38,10 @@ def main():
     if args.output:
         name = args.output[0]
         print(f"Saving to {name}.xlsx")
-        stats.to_excel(name + ".xlsx")
+        name = name + ".xlsx"
+        if not os.path.exists(name):
+            create_excel_file(name)
+        write_excel_file(name, command, stats)
 
 if __name__ == "__main__":
     main()
