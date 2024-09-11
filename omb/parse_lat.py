@@ -4,7 +4,7 @@ import io
 def parse_latency_output(output):
     # Split the output into lines
     lines = output.strip().split('\n')
-    
+
     # Find the index of the line with column headers
     header_index = next(i for i, line in enumerate(lines) if line.startswith('# Size'))
     

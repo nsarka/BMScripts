@@ -6,6 +6,7 @@ import sys
 from omb.parse_lat import *
 from excel.excel import *
 from tqdm import tqdm
+from jinja2 import Environment, FileSystemLoader
 
 def run_command(command):
     try:
@@ -39,45 +40,49 @@ def run_and_save(command, iters, sheetname, output):
 #  - A command
 #  - Number of iterations for this command
 #  - The name of the excel sheet this command's stats should be appended to
-def parse_and_run_runfile(runfile, outfile):
-    try:
-        with open(runfile, 'r') as file:
-            for line in tqdm(file, desc=f"Running commands from {runfile}", unit="cmd"):
-                if line.startswith('#') or line.isspace():
-                    continue
+def parse_and_run_runfile(runfile, outfile, dry_run):
+    jinja_env = Environment(loader = FileSystemLoader('.'))
+    template = jinja_env.get_template('runfile')
+    output = template.render()
 
-                # Strip whitespace and split the line by semicolon
-                parts = line.strip().split(';')
-                
-                # Check if the line has the correct number of parts
-                if len(parts) != 3:
-                    print(f"Warning: Skipping invalid line: {line}")
-                    continue
-                
-                # Unpack the parts
-                command, iters_str, sheetname = parts
-                
-                # Try to convert the second part to an integer
-                try:
-                    iters = int(iters_str)
-                except ValueError:
-                    print(f"Warning: Invalid integer in line: {line}")
-                    continue
+    if dry_run is True:
+        print(output)
+        sys.exit(0)
 
-                run_and_save(command, iters, sheetname, outfile)
-    
-    except FileNotFoundError:
-        print(f"Error: File '{runfile}' not found.")
-    except IOError:
-        print(f"Error: Could not read file '{runfile}'.")
+    output = output.split('\n')
+    output = list(filter(None, output)) # Remove everything that doesnt evaluate to True in each line, e.g. elements like ''
+    for line in tqdm(output, desc=f"Running commands from {runfile}", unit="cmd"):
+        if line.startswith('#') or line.isspace():
+            continue
+
+        # Strip whitespace and split the line by semicolon
+        parts = line.strip().split(';')
+
+        # Check if the line has the correct number of parts
+        if len(parts) != 3:
+            print(f"Warning: Skipping invalid line: {line}")
+            continue
+        
+        # Unpack the parts
+        command, iters_str, sheetname = parts
+        
+        # Try to convert the second part to an integer
+        try:
+            iters = int(iters_str.strip())
+        except ValueError:
+            print(f"Warning: Invalid integer in line: {line}")
+            continue
+
+        run_and_save(command.strip(), iters, sheetname.strip(), outfile)
 
 def main():
     parser = argparse.ArgumentParser(description="Run OMB and parse the output to excel")
     parser.add_argument("-o", "--outfile", nargs=1, required=True, help="Output *.xlsx file to save to (.xlsx will be appended automatically)")
     parser.add_argument("-r", "--runfile", nargs=1, required=True, help="Parse and run this file")
+    parser.add_argument("--dryrun", action='store_true', help="Just print parsed runfile")
     args = parser.parse_args()
 
-    parse_and_run_runfile(args.runfile[0], args.outfile[0])
+    parse_and_run_runfile(args.runfile[0], args.outfile[0], args.dryrun)
 
 if __name__ == "__main__":
     main()

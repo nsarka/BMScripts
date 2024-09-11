@@ -3,3 +3,4 @@ openpyxl
 argparse
 subprocess
 tqdm
+jinja2

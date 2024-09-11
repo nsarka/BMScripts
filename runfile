@@ -1,15 +1,18 @@
-# CPU
-mpirun -np 2 -H lego-cg1-qs-139:2 --mca pml ucx --mca coll ucc,basic,libnbc --map-by ppr:1:numa --bind-to core /lustre/nsarkauskas/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_allreduce ; 5 ; CPU
-mpirun -np 2 -H lego-cg1-qs-139:2 --mca pml ucx --mca coll ucc,basic,libnbc --map-by ppr:1:numa --bind-to core /lustre/nsarkauskas/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_reduce ; 5 ; CPU
-mpirun -np 2 -H lego-cg1-qs-139:2 --mca pml ucx --mca coll ucc,basic,libnbc --map-by ppr:1:numa --bind-to core /lustre/nsarkauskas/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_alltoall ; 5 ; CPU
-mpirun -np 2 -H lego-cg1-qs-139:2 --mca pml ucx --mca coll ucc,basic,libnbc --map-by ppr:1:numa --bind-to core /lustre/nsarkauskas/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_alltoallv ; 5 ; CPU
-mpirun -np 2 -H lego-cg1-qs-139:2 --mca pml ucx --mca coll ucc,basic,libnbc --map-by ppr:1:numa --bind-to core /lustre/nsarkauskas/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_allgather ; 5 ; CPU
-mpirun -np 2 -H lego-cg1-qs-139:2 --mca pml ucx --mca coll ucc,basic,libnbc --map-by ppr:1:numa --bind-to core /lustre/nsarkauskas/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_allgatherv ; 5 ; CPU
+# The dashes near the percent signs in the for loops are for whitespace control
 
-# GPU
-mpirun -np 2 -H lego-cg1-qs-139:2 --mca pml ucx --mca coll ucc,basic,libnbc --map-by ppr:1:numa --bind-to core /lustre/nsarkauskas/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_allreduce -d cuda ; 5 ; GPU
-mpirun -np 2 -H lego-cg1-qs-139:2 --mca pml ucx --mca coll ucc,basic,libnbc --map-by ppr:1:numa --bind-to core /lustre/nsarkauskas/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_reduce -d cuda ; 5 ; GPU
-mpirun -np 2 -H lego-cg1-qs-139:2 --mca pml ucx --mca coll ucc,basic,libnbc --map-by ppr:1:numa --bind-to core /lustre/nsarkauskas/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_alltoall -d cuda ; 5 ; GPU
-mpirun -np 2 -H lego-cg1-qs-139:2 --mca pml ucx --mca coll ucc,basic,libnbc --map-by ppr:1:numa --bind-to core /lustre/nsarkauskas/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_alltoallv -d cuda ; 5 ; GPU
-mpirun -np 2 -H lego-cg1-qs-139:2 --mca pml ucx --mca coll ucc,basic,libnbc --map-by ppr:1:numa --bind-to core /lustre/nsarkauskas/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_allgather -d cuda ; 5 ; GPU
-mpirun -np 2 -H lego-cg1-qs-139:2 --mca pml ucx --mca coll ucc,basic,libnbc --map-by ppr:1:numa --bind-to core /lustre/nsarkauskas/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_allgatherv -d cuda ; 5 ; GPU
+# Run collectives on CPU
+
+{% for coll in ["allreduce", "reduce", "alltoall", "alltoallv", "allgather", "allgatherv"] -%}
+{% for lib in ["ucc", "hcoll"] %}
+{%- for procs in ["16", "32"] -%}
+mpirun -np {{procs}} -H lego-c2-qs-81:{{procs}} --mca pml ucx --mca coll {{lib}},basic,libnbc --mca coll_{{lib}}_priority 99 --map-by core /lustre/nsarkauskas/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_{{coll}} ; 5 ; cpu_{{lib}}
+{% endfor %}
+{%- endfor %}
+{%- endfor %}
+
+# Run pt2pt on CPU--single socket and multiple sockets
+
+#{% for bm in ["latency", "bw", "bibw"] -%}
+#mpirun -np 2 -H lego-c2-qs-81:2 --mca pml ucx --map-by ppr:1:socket /lustre/nsarkauskas/build-arm/omb/libexec/osu-micro-benchmarks/mpi/pt2pt/osu_{{bm}} ; 5 ; cpu_pt2pt_intersock
+#mpirun -np 2 -H lego-c2-qs-81:2 --mca pml ucx --map-by ppr:2:socket /lustre/nsarkauskas/build-arm/omb/libexec/osu-micro-benchmarks/mpi/pt2pt/osu_{{bm}} ; 5 ; cpu_pt2pt_intrasock
+#{% endfor %}
