@@ -1,0 +1,53 @@
+# The dashes near the percent signs in the for loops are for whitespace control
+
+# Compare all of the bcast algs with hcoll, allreduce
+# {% for procs in ["32"] %}
+# {% for bcast_alg in ["ww", "wr", "rr", "rw"] %}
+# mpirun -np {{procs}} -H lego-c2-qs-81:{{procs}} -x UCX_NET_DEVICES=mlx5_2:1 -x UCC_TL_SHM_BCAST_ALG={{bcast_alg}} --mca pml ucx --mca coll ucc,basic,libnbc --mca coll_ucc_priority 99 --map-by core /lustre/nsarkauskas/stack/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_allreduce ; 3 ; cpu_ucc_bcast_alg_{{bcast_alg}}_ppn_{{procs}}
+# {% endfor %}
+# mpirun -np {{procs}} -H lego-c2-qs-81:{{procs}} -x UCX_NET_DEVICES=mlx5_2:1 --mca pml ucx --mca coll hcoll,basic,libnbc --mca coll_hcoll_priority 99 --map-by core /lustre/nsarkauskas/stack/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_allreduce ; 3 ; cpu_hcoll_ppn_{{procs}}
+# {% endfor %}
+
+# Compare all of the bcast algs with hcoll, bcast
+# {% for procs in ["32"] %}
+# {% for bcast_alg in ["ww", "wr", "rr", "rw"] %}
+# mpirun -np {{procs}} -H lego-c2-qs-81:{{procs}} -x UCX_NET_DEVICES=mlx5_2:1 -x UCC_TL_SHM_BCAST_ALG={{bcast_alg}} --mca pml ucx --mca coll ucc,basic,libnbc --mca coll_ucc_priority 99 --map-by core /lustre/nsarkauskas/stack/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_bcast ; 3 ; cpu_coll_bcast_ucc_bcast_alg_{{bcast_alg}}_ppn_{{procs}}
+# {% endfor %}
+# mpirun -np {{procs}} -H lego-c2-qs-81:{{procs}} -x UCX_NET_DEVICES=mlx5_2:1 --mca pml ucx --mca coll hcoll,basic,libnbc --mca coll_hcoll_priority 99 --map-by core /lustre/nsarkauskas/stack/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_bcast ; 3 ; cpu_hcoll_ppn_{{procs}}
+# {% endfor %}
+
+# not really any effect
+# UCC_TL_SHM_MAX_CONCURRENT=2
+# {% for procs in ["32"] %}
+# {% for conc in ["1", "2", "4", "8"] %}
+# mpirun -np {{procs}} -H lego-c2-qs-81:{{procs}} -x UCX_NET_DEVICES=mlx5_2:1 -x UCC_TL_SHM_MAX_CONCURRENT={{conc}} --mca pml ucx --mca coll ucc,basic,libnbc --mca coll_ucc_priority 99 --map-by core /lustre/nsarkauskas/stack/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_allreduce ; 3 ; cpu_ucc_max_conc_{{conc}}_ppn_{{procs}}
+# {% endfor %}
+# mpirun -np {{procs}} -H lego-c2-qs-81:{{procs}} -x UCX_NET_DEVICES=mlx5_2:1 --mca pml ucx --mca coll hcoll,basic,libnbc --mca coll_hcoll_priority 99 --map-by core /lustre/nsarkauskas/stack/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_allreduce ; 3 ; cpu_hcoll_ppn_{{procs}}
+# {% endfor %}
+
+# not really any effect
+# UCC_TL_SHM_DS=8192
+# {% for procs in ["32"] %}
+# {% for ds in ["2048", "4096", "8192", "16384", "32768"] %}
+# mpirun -np {{procs}} -H lego-c2-qs-81:{{procs}} -x UCX_NET_DEVICES=mlx5_2:1 -x UCC_TL_SHM_DS={{ds}} --mca pml ucx --mca coll ucc,basic,libnbc --mca coll_ucc_priority 99 --map-by core /lustre/nsarkauskas/stack/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_allreduce ; 3 ; cpu_ucc_ds_{{ds}}_ppn_{{procs}}
+# {% endfor %}
+# mpirun -np {{procs}} -H lego-c2-qs-81:{{procs}} -x UCX_NET_DEVICES=mlx5_2:1 --mca pml ucx --mca coll hcoll,basic,libnbc --mca coll_hcoll_priority 99 --map-by core /lustre/nsarkauskas/stack/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_allreduce ; 3 ; cpu_hcoll_ppn_{{procs}}
+# {% endfor %}
+
+
+# much better set to 0
+# UCC_TL_SHM_BASE_TREE_ONLY
+# {% for procs in ["32"] %}
+# {% for bt in ["0", "1"] %}
+# mpirun -np {{procs}} -H lego-c2-qs-81:{{procs}} -x UCX_NET_DEVICES=mlx5_2:1 -x UCC_TL_SHM_BASE_TREE_ONLY={{bt}} --mca pml ucx --mca coll ucc,basic,libnbc --mca coll_ucc_priority 99 --map-by core /lustre/nsarkauskas/stack/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_allreduce ; 3 ; cpu_ucc_bt_only_{{bt}}_ppn_{{procs}}
+# {% endfor %}
+# mpirun -np {{procs}} -H lego-c2-qs-81:{{procs}} -x UCX_NET_DEVICES=mlx5_2:1 --mca pml ucx --mca coll hcoll,basic,libnbc --mca coll_hcoll_priority 99 --map-by core /lustre/nsarkauskas/stack/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_allreduce ; 3 ; cpu_hcoll_ppn_{{procs}}
+# {% endfor %}
+
+
+# compare ucp with shm and hcoll, doesnt really work because UCC_TL_SHM_DS=8192 by default
+# {% for procs in ["32"] %}
+# mpirun -np {{procs}} -H lego-c2-qs-81:{{procs}} -x UCX_NET_DEVICES=mlx5_2:1 -x UCC_TL_SHM_TUNE=allreduce:inf --mca pml ucx --mca coll ucc,basic,libnbc --mca coll_ucc_priority 99 --map-by core /lustre/nsarkauskas/stack/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_allreduce ; 2 ; cpu_ucc_tl_shm_ppn_{{procs}}
+# mpirun -np {{procs}} -H lego-c2-qs-81:{{procs}} -x UCX_NET_DEVICES=mlx5_2:1 -x UCC_TL_UCP_TUNE=allreduce:inf --mca pml ucx --mca coll ucc,basic,libnbc --mca coll_ucc_priority 99 --map-by core /lustre/nsarkauskas/stack/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_allreduce ; 2 ; cpu_ucc_tl_ucp_ppn_{{procs}}
+# mpirun -np {{procs}} -H lego-c2-qs-81:{{procs}} -x UCX_NET_DEVICES=mlx5_2:1 --mca pml ucx --mca coll hcoll,basic,libnbc --mca coll_hcoll_priority 99 --map-by core /lustre/nsarkauskas/stack/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_allreduce ; 1 ; cpu_hcoll_ppn_{{procs}}
+# {% endfor %}

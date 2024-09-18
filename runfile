@@ -4,8 +4,8 @@
 
 {% for coll in ["allreduce", "reduce", "alltoall", "alltoallv", "allgather", "allgatherv"] -%}
 {% for lib in ["ucc", "hcoll"] %}
-{%- for procs in ["16", "32"] -%}
-mpirun -np {{procs}} -H lego-c2-qs-81:{{procs}} --mca pml ucx --mca coll {{lib}},basic,libnbc --mca coll_{{lib}}_priority 99 --map-by core /lustre/nsarkauskas/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_{{coll}} ; 5 ; cpu_{{lib}}
+{%- for procs in ["32", "64", "128"] -%}
+mpirun -np {{procs}} -H lego-c2-qs-81:{{procs}} -x UCX_NET_DEVICES=mlx5_2:1 --mca pml ucx --mca coll {{lib}},basic,libnbc --mca coll_{{lib}}_priority 99 --map-by core /lustre/nsarkauskas/stack/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_{{coll}} ; 5 ; cpu_{{lib}}
 {% endfor %}
 {%- endfor %}
 {%- endfor %}

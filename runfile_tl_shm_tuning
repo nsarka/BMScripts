@@ -1,0 +1,58 @@
+# Run using cmp_envs.py
+# The dashes near the percent signs in the for loops are for whitespace control
+
+# Complete tuning for TL_SHM
+{% for sockets in [1] %}
+    # [16, 32, 64, 72]
+    {% for ppr in [16] %}
+        {% for base_tree_only in ["1"] %}
+            {% for bbtr in ["4", "8", "16", "32", "64", "512"] %}
+                {% for bttr in ["0"] %}
+                    {% for rbtr in ["4", "8", "16", "32", "64", "512"] %}
+                        {% for rttr in ["0"] %}
+                            {% for bcast_alg in ["ww", "wr", "rr", "rw"] %}
+                                mpirun -np {{sockets * ppr}} -H lego-c2-qs-81:{{sockets * ppr}} -x UCX_NET_DEVICES=mlx5_2:1 -x UCC_TL_UCP_TUNE=allreduce:0 -x UCC_TL_SHM_REDUCE_BASE_RADIX={{rbtr}} -x UCC_TL_SHM_REDUCE_TOP_RADIX={{rttr}} -x UCC_TL_SHM_BCAST_BASE_RADIX={{bbtr}} -x UCC_TL_SHM_BCAST_TOP_RADIX={{bttr}} -x UCC_TL_SHM_BCAST_ALG={{bcast_alg}} --mca pml ucx --mca coll ucc,basic,libnbc --mca coll_ucc_priority 99 --map-by ppr:{{ppr}}:socket /lustre/nsarkauskas/stack/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_allreduce -m 16384 ; 1 ; cpu_ucc_tl_shm_bto_{{base_tree_only}}_bbtr_{{bbtr}}_bttr_{{bttr}}_rbtr_{{rbtr}}_rttr_{{rttr}}_bcast_alg_{{bcast_alg}}
+                            {% endfor %}
+                        {% endfor %}
+                    {% endfor %}
+                {% endfor %}
+            {% endfor %}
+        {% endfor %}
+    # Save all of the commands since the last save in a new table in the sheet called this. Name the comparison tuning
+    save ; tuning_{{sockets}}_sockets_{{ppr}}_ppr ; tuning
+    mpirun -np {{sockets * ppr}} -H lego-c2-qs-81:{{sockets * ppr}} -x UCX_NET_DEVICES=mlx5_2:1 -x UCC_TL_UCP_TUNE=allreduce:inf -x UCC_TL_SHM_TUNE=allreduce:0 --mca pml ucx --mca coll ucc,basic,libnbc --mca coll_ucc_priority 99 --map-by ppr:{{ppr}}:socket /lustre/nsarkauskas/stack/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_allreduce -m 16384 ; 1 ; cpu_ucc_tl_ucp
+    mpirun -np {{sockets * ppr}} -H lego-c2-qs-81:{{sockets * ppr}} -x UCX_NET_DEVICES=mlx5_2:1 --mca pml ucx --mca coll hcoll,basic,libnbc --mca coll_hcoll_priority 99 --map-by ppr:{{ppr}}:socket /lustre/nsarkauskas/stack/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_allreduce -m 16384 ; 1 ; cpu_hcoll
+    # Save all of the commands since the last save in a new table in the sheet called this. Name the comparison ucp_vs_hcoll
+    save ; tuning_{{sockets}}_sockets_{{ppr}}_ppr ; ucp_vs_hcoll
+    {% endfor %}
+{% endfor %}
+
+
+# {% for sockets in [2] %}
+#     {% for ppr in [16, 32, 64, 72] %}
+#         {% for base_tree_only in ["0"] %}
+#             {% for bbtr in ["4", "8", "16", "32", "64"] %}
+#                 {% for bttr in ["4", "8", "16", "32", "64"] %}
+#                     {% for rbtr in ["4", "8", "16", "32", "64"] %}
+#                         {% for rttr in ["4", "8", "16", "32", "64"] %}
+#                             {% for bcast_alg in ["ww", "wr", "rr", "rw"] %}
+#                                 mpirun -np {{sockets * ppr}} -H lego-c2-qs-81:{{sockets * ppr}} -x UCX_NET_DEVICES=mlx5_2:1 -x UCC_TL_UCP_TUNE=allreduce:0 -x UCC_TL_SHM_REDUCE_BASE_RADIX={{rbtr}} -x UCC_TL_SHM_REDUCE_TOP_RADIX={{rttr}} -x UCC_TL_SHM_BCAST_BASE_RADIX={{bbtr}} -x UCC_TL_SHM_BCAST_TOP_RADIX={{bttr}} -x UCC_TL_SHM_BCAST_ALG={{bcast_alg}} --mca pml ucx --mca coll ucc,basic,libnbc --mca coll_ucc_priority 99 --map-by ppr:{{ppr}}:socket /lustre/nsarkauskas/stack/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_allreduce -m 16384 ; 1 ; cpu_ucc_tl_shm_bto_{{base_tree_only}}_bbtr_{{bbtr}}_bttr_{{bttr}}_rbtr_{{rbtr}}_rttr_{{rttr}}_bcast_alg_{{bcast_alg}}
+#                             {% endfor %}
+#                         {% endfor %}
+#                     {% endfor %}
+#                 {% endfor %}
+#             {% endfor %}
+#         {% endfor %}
+#     # Save all of the commands since the last save in a new table in the sheet called this. Name the comparison tuning
+#     save ; tuning_{{sockets}}_sockets_{{ppr}}_ppr ; tuning
+#     mpirun -np {{sockets * ppr}} -H lego-c2-qs-81:{{sockets * ppr}} -x UCX_NET_DEVICES=mlx5_2:1 -x UCC_TL_UCP_TUNE=allreduce:inf -x UCC_TL_SHM_TUNE=allreduce:0 --mca pml ucx --mca coll ucc,basic,libnbc --mca coll_ucc_priority 99 --map-by ppr:{{ppr}}:socket /lustre/nsarkauskas/stack/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_allreduce -m 16384 ; 1 ; cpu_ucc_tl_ucp
+#     mpirun -np {{sockets * ppr}} -H lego-c2-qs-81:{{sockets * ppr}} -x UCX_NET_DEVICES=mlx5_2:1 --mca pml ucx --mca coll hcoll,basic,libnbc --mca coll_hcoll_priority 99 --map-by ppr:{{ppr}}:socket /lustre/nsarkauskas/stack/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_allreduce -m 16384 ; 1 ; cpu_hcoll
+#     # Save all of the commands since the last save in a new table in the sheet called this. Name the comparison ucp_vs_hcoll
+#     save ; tuning_{{sockets}}_sockets_{{ppr}}_ppr ; ucp_vs_hcoll
+#     {% endfor %}
+# {% endfor %}
+
+
+
+
+
