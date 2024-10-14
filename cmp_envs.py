@@ -30,6 +30,7 @@ def get_cmd_dfs(iters, command_str):
 def create_cmp_df(df_list):
     all = pd.concat(df_list, axis=1)
     all['Best'] = all.idxmin(axis=1)
+    all['Best_val'] = pd.concat(df_list, axis=1).min(axis=1)
     return all
 
 def run_and_print(command, iters, columnname):
@@ -46,7 +47,7 @@ def run_and_print(command, iters, columnname):
 #  - A command
 #  - Number of iterations for this command
 #  - The name of the excel sheet this command's stats should be appended to
-def parse_and_run_runfile(runfile, dry_run):
+def parse_and_run_runfile(runfile, dry_run, no_save):
     jinja_env = Environment(loader = FileSystemLoader('.'))
     template = jinja_env.get_template(runfile)
     output = template.render()
@@ -93,8 +94,9 @@ def parse_and_run_runfile(runfile, dry_run):
             comparison_name = ""
             if len(parts) > 2:
                 comparison_name = parts[2]
-            save_to_excel("cmp_df", comparison_name, cmp_df, parts[1])
-            print("Saved to cmp_df.xlsx in sheet " + parts[1] + " with the name " + parts[2])
+            if not no_save:
+                save_to_excel("cmp_df", comparison_name, cmp_df, parts[1])
+                print("Saved to cmp_df.xlsx in sheet " + parts[1] + " with the name " + parts[2])
             has_saved = 1
             cmd_dfs = []
 
@@ -103,16 +105,18 @@ def parse_and_run_runfile(runfile, dry_run):
         cmp_df = create_cmp_df(cmd_dfs)
         with pd.option_context('display.max_rows', None, 'display.max_columns', None):
             print(cmp_df)
-        save_to_excel("cmp_df", "", cmp_df, "cmp_df")
+        if not no_save:
+            save_to_excel("cmp_df", "", cmp_df, "cmp_df")
 
 def main():
     parser = argparse.ArgumentParser(description="Run OMB and compare the output in a dataframe")
     parser.add_argument("-r", "--runfile", nargs=1, required=True, help="Parse and run this file")
     parser.add_argument("--dryrun", action='store_true', help="Just print parsed runfile")
+    parser.add_argument("--nosave", action='store_true', help="Dont save to excel")
     args = parser.parse_args()
 
     print("comparing ", args.runfile[0])
-    parse_and_run_runfile(args.runfile[0], args.dryrun)
+    parse_and_run_runfile(args.runfile[0], args.dryrun, args.nosave)
 
 if __name__ == "__main__":
     main()

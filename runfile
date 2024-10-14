@@ -2,11 +2,13 @@
 
 # Run collectives on CPU
 
-{% for coll in ["allreduce", "reduce", "alltoall", "alltoallv", "allgather", "allgatherv"] -%}
+{% for coll in ["allreduce", "reduce", "bcast", "alltoall", "alltoallv"] -%}
 {% for lib in ["ucc", "hcoll"] %}
-{%- for procs in ["32", "64", "128"] -%}
-mpirun -np {{procs}} -H lego-c2-qs-81:{{procs}} -x UCX_NET_DEVICES=mlx5_2:1 --mca pml ucx --mca coll {{lib}},basic,libnbc --mca coll_{{lib}}_priority 99 --map-by core /lustre/nsarkauskas/stack/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_{{coll}} ; 5 ; cpu_{{lib}}
+{% for socket in [1, 2] %}
+{%- for ppr in [72] -%}
+mpirun -np {{socket * ppr}} -H lego-c2-qs-74:{{socket * ppr}} -x UCX_NET_DEVICES=mlx5_2:1 --mca pml ucx --mca coll {{lib}},basic,libnbc --mca coll_{{lib}}_priority 99 --map-by ppr:{{ppr}}:socket /lustre/nsarkauskas/stack/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_{{coll}} ; 3 ; cpu_{{lib}}_{{socket}}_socket_{{ppr}}_ppr
 {% endfor %}
+{%- endfor %}
 {%- endfor %}
 {%- endfor %}
 
