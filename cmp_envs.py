@@ -13,17 +13,18 @@ def run_command(command):
         result = subprocess.run(command, capture_output=True, text=True, check=True)
         return result.stdout
     except subprocess.CalledProcessError as e:
-        print(f"Error running command: {e}")
+        print(f"Error running command:\n {' '.join(command)}")
         print("Error output:")
+        print(e.stdout)
         print(e.stderr)
         sys.exit(1)
 
-def get_cmd_dfs(iters, command_str):
+def get_cmd_dfs(iters, command_str, parser):
     dfs = []
     #for _ in tqdm(range(iters), desc=f"Running command {iters} times"):
     for _ in range(iters):
         out = run_command(command_str.split(' '))
-        df = parse_latency_output(out)
+        df = parse_output(parser, out)
         dfs.append(df)
     return dfs
 
@@ -33,9 +34,14 @@ def create_cmp_df(df_list):
     all['Best_val'] = pd.concat(df_list, axis=1).min(axis=1)
     return all
 
-def run_and_print(command, iters, columnname):
-    dfs = get_cmd_dfs(iters, command)
-    stats = create_stat_df(dfs)
+def run_and_print(command, iters, columnname, parser):
+    dfs = get_cmd_dfs(iters, command, parser)
+    if parser == "full":
+        # if we're using the full output parser, we're probably trying to get something other than the normal avglat output
+        # for because the max is what we care about a lot of the time, so compute the stats based on the max latency instead of avg
+        stats = create_stat_df_max(dfs)
+    else:
+        stats = create_stat_df_lat(dfs)
     print()
     print(command)
     print(stats)
@@ -71,13 +77,16 @@ def parse_and_run_runfile(runfile, dry_run, no_save):
         # If there wasnt a save command, run whatever the line says
         if parts[0] != "save":
             # Check if the line has the correct number of parts
-            if len(parts) != 3:
+            if len(parts) == 4:
+                # Unpack the parts with parser specifier
+                command, iters_str, parser, columnname = parts
+            elif len(parts) == 3:
+                # Unpack the parts without parser specifier
+                command, iters_str, parser, columnname = parts
+            else:
                 print(f"Warning: Skipping invalid line: {line}")
                 continue
-            
-            # Unpack the parts
-            command, iters_str, columnname = parts
-            
+
             # Try to convert the second part to an integer
             try:
                 iters = int(iters_str)
@@ -85,7 +94,7 @@ def parse_and_run_runfile(runfile, dry_run, no_save):
                 print(f"Warning: Invalid integer in line: {line}")
                 continue
 
-            cmd_dfs.append(run_and_print(command, iters, columnname))
+            cmd_dfs.append(run_and_print(command, iters, columnname, parser))
         else:
             print("Found save command: ", parts)
             cmp_df = create_cmp_df(cmd_dfs)

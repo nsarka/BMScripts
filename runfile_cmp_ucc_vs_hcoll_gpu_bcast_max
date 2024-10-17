@@ -1,0 +1,17 @@
+# The dashes near the percent signs in the for loops are for whitespace control
+
+# --map-by ppr:{{ppr}}:socket --bind-to core 
+
+# lego-cg1-qs-[141-148]
+# -H lego-cg1-qs-141:{{ppn}} -H lego-cg1-qs-142:{{ppn}} -H lego-cg1-qs-143:{{ppn}} -H lego-cg1-qs-144:{{ppn}} -H lego-cg1-qs-145:{{ppn}} -H lego-cg1-qs-146:{{ppn}} -H lego-cg1-qs-147:{{ppn}} -H lego-cg1-qs-148:{{ppn}} 
+
+{% for coll in ["bcast"] %}
+    {% for nodes in [1] %}
+        {% for ppn in [8] %}
+            mpirun -np {{nodes * ppn}} --map-by hwthread -H lego-cg1-qs-141:{{ppn}} -x LD_LIBRARY_PATH -x CUDA_VISIBLE_DEVICES=0 --mca pml ucx --mca coll ucc,basic,libnbc --mca coll_ucc_priority 99 /lustre/nsarkauskas/stack/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_{{coll}} -d cuda --full ; 2 ; full ; gpu_ucc_{{coll}}_{{nodes}}_nodes_{{ppn}}_ppn
+            mpirun -np {{nodes * ppn}} --map-by hwthread -H lego-cg1-qs-141:{{ppn}} -x LD_LIBRARY_PATH -x CUDA_VISIBLE_DEVICES=0 --mca pml ucx --mca coll hcoll,basic,libnbc --mca coll_hcoll_priority 99 /lustre/nsarkauskas/stack/build-arm/omb/libexec/osu-micro-benchmarks/mpi/collective/osu_{{coll}} -d cuda --full ; 2 ; full ; gpu_hcoll_{{coll}}_{{nodes}}_nodes_{{ppn}}_ppn
+        {% endfor %}
+    {% endfor %}
+    # Save all of the commands since the last save in a new table in the sheet called this (the first argument). Name the comparison the second argument
+    save ; coll_{{coll}} ; gpu_ucc_vs_hcoll_{{nodes}}_nodes_{{ppn}}_ppn
+{% endfor %}
